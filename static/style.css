@@ -1,0 +1,22 @@
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0b1020;color:#f5f7ff}
+header{display:flex;justify-content:space-between;align-items:center;padding:22px 5%;background:#121a33}
+h1{margin:0;font-size:32px} header p{margin:6px 0 0;color:#aeb8d5}
+#timer{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums}
+main{max-width:1200px;margin:auto;padding:24px 20px}
+.mission,.panel,.concept{background:#141d38;border:1px solid #2b385f;border-radius:18px;padding:22px;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel h2{margin-top:0}
+.human{border-top:5px solid #55d6be}.agent{border-top:5px solid #8e7dff}
+label{display:block;margin:15px 0;font-weight:700}
+select{display:block;width:100%;padding:13px;margin-top:7px;border-radius:10px;border:1px solid #3a486f;background:#0e152b;color:white;font-size:16px}
+button{padding:13px 18px;border:0;border-radius:10px;margin:8px 6px 0 0;font-weight:800;cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}
+#start{background:#55d6be;color:#061310}.step{display:flex;gap:12px;padding:12px;margin:8px 0;background:#0e152b;border-radius:10px}
+.step span{font-size:22px}.step small{display:block;color:#aeb8d5;margin-top:3px}
+.result{font-size:20px;font-weight:800;margin-top:18px}
+.winner{display:none;text-align:center;padding:28px;border-radius:18px;background:#182443;margin:20px 0}
+.winner h2{font-size:32px;margin:0}
+.concept{text-align:center}.flow{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;align-items:center;margin:20px 0}
+.flow span{background:#0e152b;padding:10px 14px;border-radius:8px;font-weight:800}
+@media(max-width:800px){.grid{grid-template-columns:1fr}h1{font-size:24px}#timer{font-size:24px}}
