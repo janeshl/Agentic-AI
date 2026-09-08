@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Race Against AI</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>🏎️ RACE AGAINST AI</h1>
+    <p>Can you beat an autonomous AI agent?</p>
+  </div>
+  <div id="timer">00:00.0</div>
+</header>
+
+<main>
+<section class="mission">
+  <h2>MISSION</h2>
+  <p><b>NovaMart</b> wants to maximize weekend campaign revenue with a ₹50,000 budget.</p>
+  <p>Select a <b>product</b>, <b>customer segment</b>, <b>advertising channel</b> and <b>discount</b>.</p>
+</section>
+
+<div class="grid">
+<section class="panel human">
+  <h2>👤 HUMAN</h2>
+  <div id="humanStatus">Ready</div>
+  <label>Product<select id="product">
+    {% for x in products %}<option>{{x.name}}</option>{% endfor %}
+  </select></label>
+  <label>Customer segment<select id="segment">
+    {% for x in segments %}<option>{{x.name}}</option>{% endfor %}
+  </select></label>
+  <label>Advertising channel<select id="channel">
+    {% for x in channels %}<option>{{x.name}}</option>{% endfor %}
+  </select></label>
+  <label>Discount<select id="discount">
+    {% for x in discounts %}<option value="{{x}}">{{x}}%</option>{% endfor %}
+  </select></label>
+  <button id="start" onclick="startRace()">▶ START RACE</button>
+  <button id="submit" onclick="submitHuman()" disabled>🏁 SUBMIT</button>
+  <div class="result" id="humanResult"></div>
+</section>
+
+<section class="panel agent">
+  <h2>🤖 AI AGENT</h2>
+  <div id="agentStatus">Waiting for mission...</div>
+  <div id="steps"></div>
+  <div class="result" id="aiResult"></div>
+</section>
+</div>
+
+<section class="winner" id="winner">
+  <h2 id="winnerText"></h2>
+  <p id="explain"></p>
+  <button onclick="location.reload()">🔁 NEXT ROUND</button>
+</section>
+
+<section class="concept">
+<h2>What just happened?</h2>
+<div class="flow">
+<span>GOAL</span><b>→</b><span>PLAN</span><b>→</b><span>USE TOOLS</span><b>→</b><span>OBSERVE</span><b>→</b><span>EVALUATE</span><b>→</b><span>ACT</span>
+</div>
+<p>A chatbot mainly responds to a prompt. An agent is given a goal and can choose actions, use tools and adapt its plan.</p>
+</section>
+</main>
+<script>
+let started=false, startTime=0, humanTime=null, aiTime=null, timerInterval=null, aiData=null;
+
+function tick(){
+  const t=(performance.now()-startTime)/1000;
+  document.getElementById('timer').textContent =
+    new Date(t*1000).toISOString().substr(14,5)+"."+Math.floor((t*10)%10);
+}
+async function startRace(){
+  if(started) return;
+  started=true; startTime=performance.now();
+  document.getElementById('start').disabled=true;
+  document.getElementById('submit').disabled=false;
+  document.getElementById('humanStatus').textContent="Race started — make your decision!";
+  document.getElementById('agentStatus').textContent="Goal received...";
+  timerInterval=setInterval(tick,50);
+
+  const res=await fetch('/api/agent'); aiData=await res.json();
+  const box=document.getElementById('steps'); box.innerHTML="";
+  for(let i=0;i<aiData.steps.length;i++){
+    await new Promise(r=>setTimeout(r,550));
+    const [icon,title,desc]=aiData.steps[i];
+    const div=document.createElement('div'); div.className="step";
+    div.innerHTML=`<span>${icon}</span><div><b>${title}</b><small>${desc}</small></div>`;
+    box.appendChild(div);
+    document.getElementById('agentStatus').textContent=title;
+    if(i===aiData.steps.length-1){
+      aiTime=(performance.now()-startTime)/1000;
+      document.getElementById('aiResult').textContent=`Agent completed in ${aiTime.toFixed(1)}s`;
+    }
+  }
+}
+async function submitHuman(){
+  if(!started) return;
+  humanTime=(performance.now()-startTime)/1000;
+  clearInterval(timerInterval);
+  document.getElementById('submit').disabled=true;
+  document.getElementById('humanStatus').textContent="Submitted";
+  document.getElementById('humanResult').textContent=`You completed in ${humanTime.toFixed(1)}s`;
+
+  const data={product:product.value,segment:segment.value,channel:channel.value,discount:discount.value};
+  const res=await fetch('/api/finalize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  const out=await res.json();
+  document.getElementById('winner').style.display='block';
+
+  let winner, explanation;
+  if(out.human > out.ai) {
+    winner="🎉 YOU BEAT THE AI!";
+    explanation=`Your simulated outcome was ₹${out.human.toLocaleString()}, versus the agent's ₹${out.ai.toLocaleString()}.`;
+  } else if(out.human === out.ai) {
+    winner="🤝 IT'S A TIE!";
+    explanation=`Both strategies produced about ₹${out.ai.toLocaleString()} in the simulator.`;
+  } else {
+    winner="🤖 AI AGENT WINS!";
+    explanation=`Your simulated outcome was ₹${out.human.toLocaleString()}, versus the agent's ₹${out.ai.toLocaleString()}.`;
+  }
+  document.getElementById('winnerText').textContent=winner;
+  document.getElementById('explain').textContent=explanation;
+}
+</script>
+</body>
+</html>
